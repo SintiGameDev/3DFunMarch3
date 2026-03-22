@@ -30,7 +30,7 @@ public class LobbyManager : MonoBehaviour
     [SerializeField] private int maxSpieler = 4;
 
     // Aktueller Relay Code fuer Debug UI
-    public static string AktuellerJoinCode { get; private set; } = "";
+    public static string AktuellerJoinCode { get; set; } = "";
 
     private async void Start()
     {

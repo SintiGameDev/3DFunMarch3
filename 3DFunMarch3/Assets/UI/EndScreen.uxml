@@ -1,0 +1,64 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="USS/GlobalStyles.uss" />
+
+    <ui:VisualElement name="EndScreen" class="screen">
+
+        <!-- Overlay -->
+        <ui:VisualElement name="Overlay"
+            style="position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+                   background-color: rgba(0, 0, 0, 0.45);" />
+
+        <!-- Panel -->
+        <ui:VisualElement name="EndPanel" class="panel"
+            style="min-width: 500px; max-width: 640px;">
+
+            <ui:Label name="TitelLabel"
+                      text="RUNDENENDE"
+                      class="heading-xl"
+                      style="margin-bottom: 4px;" />
+
+            <ui:Label name="GewinnertextLabel"
+                      text=""
+                      class="text-accent"
+                      style="font-size: 16px; margin-bottom: 24px;
+                             -unity-text-align: middle-center;" />
+
+            <ui:VisualElement class="divider" style="margin-top: 0;" />
+
+            <!-- Spaltenheader -->
+            <ui:VisualElement style="flex-direction: row; padding: 0 8px; margin-bottom: 6px;">
+                <ui:Label text="#"
+                          class="text-small"
+                          style="width: 32px;" />
+                <ui:Label text="SPIELER"
+                          class="text-small"
+                          style="flex-grow: 1;" />
+                <ui:Label text="HOEHE"
+                          class="text-small"
+                          style="width: 72px; -unity-text-align: middle-right;" />
+                <ui:Label text="LEBEN"
+                          class="text-small"
+                          style="width: 56px; -unity-text-align: middle-right;" />
+            </ui:VisualElement>
+
+            <!-- Ranking (per Code befuellt) -->
+            <ui:VisualElement name="RankingListe"
+                style="margin-bottom: 8px;" />
+
+            <ui:VisualElement class="divider" style="margin-bottom: 0;" />
+
+            <!-- Neustart (nur Host) -->
+            <ui:Button name="NeustartButton"
+                       text="Neustart"
+                       class="btn btn--primary btn--full-width"
+                       style="display: none; margin-top: 20px;" />
+
+            <!-- Warte-Text (nur Clients) -->
+            <ui:Label name="WarteLabel"
+                      text="Warte auf Host..."
+                      class="text-body"
+                      style="display: none; margin-top: 20px;" />
+
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,130 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="USS/GlobalStyles.uss" />
+
+    <!-- Hintergrund -->
+    <ui:VisualElement name="LobbyBackground" class="screen"
+        style="background-color: rgb(238, 242, 255);" />
+
+    <!-- Panel (startet leicht unterhalb, animiert hoch) -->
+    <ui:VisualElement name="LobbyScreen" class="screen">
+
+        <ui:VisualElement name="LobbyPanel" class="panel">
+
+            <!-- Titel (immer sichtbar) -->
+            <ui:Label name="TitelLabel"
+                      text="SPIELTITEL"
+                      class="heading-xl"
+                      style="margin-bottom: 2px;" />
+
+            <ui:Label name="UntertitelLabel"
+                      text="Multiplayer"
+                      class="text-body"
+                      style="margin-bottom: 32px;" />
+
+            <!-- ==================== -->
+            <!-- ZUSTAND 1: Namenswahl -->
+            <!-- ==================== -->
+            <ui:VisualElement name="ZustandName">
+
+                <ui:Label text="DEIN NAME"
+                          class="heading-sm"
+                          style="margin-bottom: 8px;" />
+
+                <ui:TextField name="NameInput"
+                              max-length="20"
+                              class="input-field" />
+
+                <ui:Label name="NameFehlerLabel"
+                          text="Bitte einen Namen eingeben."
+                          class="text-danger"
+                          style="display: none; margin-bottom: 8px;" />
+
+                <ui:Button name="WeiterButton"
+                           text="Weiter"
+                           class="btn btn--primary btn--full-width btn--disabled"
+                           style="margin-top: 8px;" />
+
+            </ui:VisualElement>
+
+            <!-- ====================== -->
+            <!-- ZUSTAND 2: Modus wahl -->
+            <!-- ====================== -->
+            <ui:VisualElement name="ZustandModus" style="display: none;">
+
+                <ui:Label name="BegrüssungLabel"
+                          text="Hallo!"
+                          class="heading-md"
+                          style="margin-bottom: 24px; -unity-text-align: middle-center;" />
+
+                <ui:Label name="StatusLabel"
+                          text="Bereit."
+                          class="text-body"
+                          style="margin-bottom: 20px;" />
+
+                <ui:Button name="HostButton"
+                           text="Host starten"
+                           class="btn btn--primary btn--full-width" />
+
+                <ui:Button name="JoinButton"
+                           text="Beitreten"
+                           class="btn btn--secondary btn--full-width" />
+
+            </ui:VisualElement>
+
+            <!-- ======================== -->
+            <!-- ZUSTAND 3A: Host aktiv  -->
+            <!-- ======================== -->
+            <ui:VisualElement name="ZustandHost" style="display: none;">
+
+                <ui:Label text="DEIN CODE"
+                          class="heading-sm"
+                          style="margin-bottom: 8px;" />
+
+                <ui:VisualElement class="code-box">
+                    <ui:Label name="HostCodeLabel"
+                              text="------"
+                              class="code-text" />
+                </ui:VisualElement>
+
+                <ui:Label name="SpielerZaehlerLabel"
+                          text="Spieler: 1 verbunden"
+                          class="text-body"
+                          style="margin-top: 12px; margin-bottom: 20px;" />
+
+                <ui:Button name="AbrechenButton"
+                           text="Abbrechen"
+                           class="btn btn--danger btn--full-width" />
+
+            </ui:VisualElement>
+
+            <!-- ========================== -->
+            <!-- ZUSTAND 3B: Join aktiv    -->
+            <!-- ========================== -->
+            <ui:VisualElement name="ZustandJoin" style="display: none;">
+
+                <ui:Label text="SESSION CODE"
+                          class="heading-sm"
+                          style="margin-bottom: 8px;" />
+
+                <ui:TextField name="JoinCodeInput"
+                              max-length="10"
+                              class="input-field" />
+
+                <ui:Label name="JoinFehlerLabel"
+                          text=""
+                          class="text-danger"
+                          style="display: none; margin-bottom: 8px;" />
+
+                <ui:Button name="VerbindenButton"
+                           text="Verbinden"
+                           class="btn btn--primary btn--full-width" />
+
+                <ui:Button name="ZurueckButton"
+                           text="Zurueck"
+                           class="btn btn--ghost btn--full-width" />
+
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

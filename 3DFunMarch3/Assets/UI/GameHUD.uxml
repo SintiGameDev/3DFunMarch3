@@ -1,0 +1,44 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="USS/GlobalStyles.uss" />
+
+    <ui:VisualElement name="HUDScreen" class="screen">
+
+        <!-- Timer: schwebend, zentriert oben, kein Panel -->
+        <ui:VisualElement name="TimerContainer"
+            style="position: absolute; left: 0; right: 0; top: 24px;
+                   align-items: center;">
+            <ui:Label name="TimerLabel"
+                      text="1:00"
+                      class="hud-timer" />
+            <ui:Label name="RundeLabel"
+                      text="RUNDE 1"
+                      class="hud-runde" />
+        </ui:VisualElement>
+
+        <!-- Debug: kleines halbtransparentes Panel links oben -->
+        <ui:VisualElement name="DebugPanel"
+            style="position: absolute; left: 16px; top: 16px;
+                   background-color: rgba(0,0,0,0.25);
+                   border-radius: 6px; padding: 6px 10px;">
+            <ui:Label name="DebugLabel"
+                      text="● Host"
+                      class="hud-debug" />
+        </ui:VisualElement>
+
+        <!-- Spieler Hoehenranking: schwebend links, Y dynamisch per Code -->
+        <ui:VisualElement name="HoehenContainer"
+            style="position: absolute; left: 20px; top: 0; bottom: 0;">
+            <!-- Eintraege werden per Code hinzugefuegt -->
+        </ui:VisualElement>
+
+        <!-- Leben: schwebend rechts unten, kein Panel -->
+        <ui:VisualElement name="LebenContainer"
+            style="position: absolute; right: 24px; bottom: 24px;
+                   align-items: flex-end;">
+            <ui:Label name="LebenLabel"
+                      text="♥ ♥ ♥"
+                      class="hud-leben" />
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

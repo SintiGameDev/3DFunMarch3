@@ -16,8 +16,6 @@ public class CameraLook : NetworkBehaviour
     {
         kamera = GetComponent<Camera>();
 
-        // Kamera standardmaessig deaktivieren
-        // Sie wird nur fuer den Owner eingeschaltet
         if (kamera != null)
             kamera.enabled = false;
     }
@@ -28,17 +26,27 @@ public class CameraLook : NetworkBehaviour
 
         if (!IsOwner) return;
 
-        // Nur die eigene Kamera einschalten
         if (kamera != null)
             kamera.enabled = true;
 
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        CursorSperren();
     }
 
     void Update()
     {
         if (!IsOwner) return;
+
+        // Cursor-Zustand je nach aktivem Screen setzen
+        bool spielAktiv = UIManager.Singleton != null
+            && UIManager.Singleton.AktuellerScreen == UIManager.Screen.HUD;
+
+        if (spielAktiv && Cursor.lockState != CursorLockMode.Locked)
+            CursorSperren();
+        else if (!spielAktiv && Cursor.lockState != CursorLockMode.None)
+            CursorFreigeben();
+
+        // Kamerasteuerung nur wenn Spiel aktiv und Cursor gesperrt
+        if (!spielAktiv) return;
 
         float mausX = Input.GetAxis("Mouse X") * mausSensitivitaet;
         float mausY = Input.GetAxis("Mouse Y") * mausSensitivitaet;
@@ -49,5 +57,17 @@ public class CameraLook : NetworkBehaviour
         transform.localRotation = Quaternion.Euler(vertikaleRotation, 0f, 0f);
 
         spielerKoerper.Rotate(Vector3.up * mausX);
+    }
+
+    private void CursorSperren()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible   = false;
+    }
+
+    private void CursorFreigeben()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible   = true;
     }
 }
