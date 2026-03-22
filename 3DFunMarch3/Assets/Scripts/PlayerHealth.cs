@@ -25,24 +25,62 @@ public class PlayerHealth : NetworkBehaviour
         characterController = GetComponent<CharacterController>();
     }
 
+    //public override void OnNetworkSpawn()
+    //{
+    //    // UI initialisieren
+    //    UpdateLebenUI(0, aktuelleLeben.Value);
+
+    //    // Listener für zukünftige Änderungen registrieren
+    //    aktuelleLeben.OnValueChanged += UpdateLebenUI;
+
+    //    if (IsServer)
+    //    {
+    //        aktuelleLeben.Value = startLeben;
+    //    }
+    //}
+
+    //public override void OnNetworkDespawn()
+    //{
+    //    // Listener sauber entfernen, um Memory Leaks zu vermeiden
+    //    aktuelleLeben.OnValueChanged -= UpdateLebenUI;
+    //}
+
     public override void OnNetworkSpawn()
     {
-        // UI initialisieren
-        UpdateLebenUI(0, aktuelleLeben.Value);
-
-        // Listener für zukünftige Änderungen registrieren
-        aktuelleLeben.OnValueChanged += UpdateLebenUI;
-
+        // 1. Serverseitige Initialisierung (muss für alle Spieler passieren)
         if (IsServer)
         {
             aktuelleLeben.Value = startLeben;
+        }
+
+        // 2. Clientseitige UI-Logik (Nur für den lokalen Spieler)
+        if (IsOwner)
+        {
+            // UI initialisieren
+            UpdateLebenUI(0, aktuelleLeben.Value);
+
+            // Listener für zukünftige Änderungen registrieren
+            aktuelleLeben.OnValueChanged += UpdateLebenUI;
+        }
+        else
+        {
+            // 3. UI für alle fremden Spieler deaktivieren!
+            if (lebenTextUI != null)
+            {
+                // Best Practice: Das gesamte Canvas des Fremdspielers deaktivieren, 
+                // nicht nur den Text. Das spart Performance (Draw Calls).
+                lebenTextUI.canvas.gameObject.SetActive(false);
+            }
         }
     }
 
     public override void OnNetworkDespawn()
     {
-        // Listener sauber entfernen, um Memory Leaks zu vermeiden
-        aktuelleLeben.OnValueChanged -= UpdateLebenUI;
+        // Listener nur entfernen, wenn er auch registriert wurde (IsOwner)
+        if (IsOwner)
+        {
+            aktuelleLeben.OnValueChanged -= UpdateLebenUI;
+        }
     }
 
     private void UpdateLebenUI(int alterWert, int neuerWert)
