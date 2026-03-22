@@ -762,8 +762,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 528757834}
-  - component: {fileID: 528757833}
   - component: {fileID: 528757835}
+  - component: {fileID: 528757833}
   m_Layer: 0
   m_Name: FObstacleSpawnManager
   m_TagString: Untagged
@@ -784,14 +784,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  obstaclePrefabs: []
+  obstaclePrefabs:
+  - {fileID: 3720649321254553994, guid: 7388a4ba107870e4b953b4aaa79dac8b, type: 3}
+  - {fileID: 4195449330917118624, guid: d2b00f35f650b624ebf8db31ffde151c, type: 3}
+  - {fileID: 2892393900813446783, guid: 1147a536ebc1c4d418ffc4b0220ff03e, type: 3}
+  - {fileID: 492245621828925112, guid: d61cb084cf8b2b44986e5bd7d9d4b525, type: 3}
+  - {fileID: 3737480884400756103, guid: f82b5d5e82684c4469138b4ad06a2721, type: 3}
+  - {fileID: 2692205314817191755, guid: 11ab9ffb7878f104a814a47ed948fd84, type: 3}
+  - {fileID: 6607182690265921805, guid: ace913233e4549448a8e7cf0eac95f78, type: 3}
+  - {fileID: 7384884230914764799, guid: 2a4a7f4204975ac49a2f0310e57265da, type: 3}
+  - {fileID: 2699120337045188249, guid: b16f47f3973251f44ad5e4f0cc5c2578, type: 3}
   plattformZentrum: {fileID: 996135773}
   spawnBereichX: 10
   spawnBereichZ: 10
-  minSpawnHoehe: 15
-  maxSpawnHoehe: 30
+  minSpawnHoehe: 30
+  maxSpawnHoehe: 100
   plattformHoehe: 0
-  spawnIntervall: 2
+  spawnIntervall: 0.5
   maxObstacles: 30
   minSkalierung: 0.5
   maxSkalierung: 2.5
@@ -1918,7 +1927,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -2493,7 +2503,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -2629,7 +2640,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
