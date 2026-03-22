@@ -1546,7 +1546,7 @@ MonoBehaviour:
   minSpawnHoehe: 30
   maxSpawnHoehe: 100
   plattformHoehe: 0
-  spawnIntervall: 0.5
+  spawnIntervall: 0.2
   maxObstacles: 10000
   minSkalierung: 1
   maxSkalierung: 2.5
@@ -1854,8 +1854,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 814101840}
-  - component: {fileID: 814101839}
   - component: {fileID: 814101841}
+  - component: {fileID: 814101839}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1876,7 +1876,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  rundenDauer: 60
+  rundenDauer: 180
   neustartVerzoegerung: 5
   spawnPunkte:
   - {fileID: 1591268068}
