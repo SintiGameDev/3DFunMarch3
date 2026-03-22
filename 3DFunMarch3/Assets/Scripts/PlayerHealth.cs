@@ -1,25 +1,31 @@
 using UnityEngine;
+using UnityEngine.UI;
 using Unity.Netcode;
 using TMPro;
+using System.Collections;
 
 public class PlayerHealth : NetworkBehaviour
 {
     [Header("Leben & Respawn")]
     [SerializeField] private float todesHoehe = -10f;
     [SerializeField] private int startLeben = 3;
-    [SerializeField] private float immunitaetsDauer = 3f; // 3 Sekunden Immunität
+    [SerializeField] private float immunitaetsDauer = 3f;
 
     [Header("UI")]
     [SerializeField] private TextMeshProUGUI lebenTextUI;
 
-    // Synchronisierte Variablen. Server schreibt, alle lesen.
+    [Header("Damage Flash (Wird per Code generiert)")]
+    [SerializeField] private Color flashFarbe = new Color(1f, 0f, 0f, 0.5f);
+    [SerializeField] private float fadeOutDauer = 0.5f;
+
+    private Image damageFlashImage;
+
     private NetworkVariable<int> aktuelleLeben = new NetworkVariable<int>(
         3,
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server
     );
 
-    // Synchronisierter Status für die Immunität
     private NetworkVariable<bool> istImmun = new NetworkVariable<bool>(
         false,
         NetworkVariableReadPermission.Everyone,
@@ -28,6 +34,7 @@ public class PlayerHealth : NetworkBehaviour
 
     private CharacterController characterController;
     private float immunTimer = 0f;
+    private Coroutine flashCoroutine;
 
     private void Awake()
     {
@@ -44,7 +51,10 @@ public class PlayerHealth : NetworkBehaviour
 
         if (IsOwner)
         {
-            UpdateLebenUI(0, aktuelleLeben.Value);
+            // Generiert das komplette Flash-UI dynamisch zur Laufzeit
+            DamageFlashUIGenerieren();
+
+            UpdateLebenUI(aktuelleLeben.Value, aktuelleLeben.Value);
             aktuelleLeben.OnValueChanged += UpdateLebenUI;
         }
         else
@@ -55,7 +65,6 @@ public class PlayerHealth : NetworkBehaviour
             }
         }
 
-        // Listener für visuelles Feedback bei Immunitäts-Statuswechsel
         istImmun.OnValueChanged += OnImmunitaetGeaendert;
     }
 
@@ -64,62 +73,117 @@ public class PlayerHealth : NetworkBehaviour
         if (IsOwner)
         {
             aktuelleLeben.OnValueChanged -= UpdateLebenUI;
+
+            // Cleanup: Dynamisch erstelltes Canvas sauber entfernen
+            if (damageFlashImage != null && damageFlashImage.canvas != null)
+            {
+                Destroy(damageFlashImage.canvas.gameObject);
+            }
         }
         istImmun.OnValueChanged -= OnImmunitaetGeaendert;
     }
 
+    /// <summary>
+    /// Baut das UI-Canvas und das Image per Code auf, um manuelle Editor-Arbeit zu sparen.
+    /// </summary>
+    private void DamageFlashUIGenerieren()
+    {
+        // 1. Neues Canvas-Objekt erstellen
+        GameObject canvasObj = new GameObject("DamageFlashCanvas_Dynamisch");
+        Canvas canvas = canvasObj.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 100; // Hohe Prioritaet, damit es ueber dem HUD liegt
+
+        // 2. Image-Objekt als Child des Canvas erstellen
+        GameObject imageObj = new GameObject("FlashImage");
+        imageObj.transform.SetParent(canvasObj.transform, false);
+
+        damageFlashImage = imageObj.AddComponent<Image>();
+        damageFlashImage.color = new Color(flashFarbe.r, flashFarbe.g, flashFarbe.b, 0f);
+
+        // WICHTIG: Verhindert, dass das unsichtbare Bild UI-Klicks blockiert
+        damageFlashImage.raycastTarget = false;
+
+        // 3. RectTransform so einstellen, dass es den gesamten Bildschirm ausfuellt
+        RectTransform rect = damageFlashImage.rectTransform;
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+    }
+
     private void UpdateLebenUI(int alterWert, int neuerWert)
     {
-        if (IsOwner && lebenTextUI != null)
+        if (!IsOwner) return;
+
+        if (lebenTextUI != null)
         {
             lebenTextUI.text = "Leben: " + neuerWert;
         }
+
+        // Screenflash nur auslösen, wenn tatsächlich Leben verloren wurde
+        if (neuerWert < alterWert && damageFlashImage != null)
+        {
+            if (flashCoroutine != null)
+            {
+                StopCoroutine(flashCoroutine);
+            }
+            flashCoroutine = StartCoroutine(DamageFlashRoutine());
+        }
+    }
+
+    private IEnumerator DamageFlashRoutine()
+    {
+        damageFlashImage.color = flashFarbe;
+        float timer = 0f;
+
+        while (timer < fadeOutDauer)
+        {
+            timer += Time.deltaTime;
+            float alpha = Mathf.Lerp(flashFarbe.a, 0f, timer / fadeOutDauer);
+
+            Color aktuelleFarbe = damageFlashImage.color;
+            aktuelleFarbe.a = alpha;
+            damageFlashImage.color = aktuelleFarbe;
+
+            yield return null;
+        }
+
+        damageFlashImage.color = new Color(flashFarbe.r, flashFarbe.g, flashFarbe.b, 0f);
     }
 
     private void OnImmunitaetGeaendert(bool vorher, bool jetzt)
     {
-        // Hier greift die visuelle Repräsentation (Client-Side Prediction / Feedback).
-        // z.B. MeshRenderer auf transparent setzen, Skript für Blinken aktivieren etc.
         if (jetzt)
-        {
             Debug.Log($"[PlayerHealth] Spieler {OwnerClientId} ist nun immun.");
-            // Beispiel: GetComponentInChildren<Renderer>().material.color = Color.gray;
-        }
         else
-        {
             Debug.Log($"[PlayerHealth] Spieler {OwnerClientId} ist wieder verwundbar.");
-            // Beispiel: GetComponentInChildren<Renderer>().material.color = Color.white;
-        }
     }
 
     private void Update()
     {
         if (!IsServer) return;
 
-        // Immunitäts-Timer verwalten (Nur der Server steuert die Zeit)
         if (istImmun.Value)
         {
             immunTimer -= Time.deltaTime;
             if (immunTimer <= 0f)
             {
-                istImmun.Value = false; // Immunität aufheben
+                istImmun.Value = false;
             }
         }
 
-        // Fall in den Abgrund prüfen
         if (transform.position.y < todesHoehe)
         {
             Sterben();
         }
     }
 
-    // Variante 1: Wenn das fallende Rigidbody den Spieler trifft
     private void OnCollisionEnter(Collision collision)
     {
         KollisionMitHindernisPruefen(collision.gameObject);
     }
 
-    // Variante 2: Wenn der Spieler in das fallende Objekt läuft (CharacterController Logik)
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
         KollisionMitHindernisPruefen(hit.gameObject);
@@ -131,7 +195,6 @@ public class PlayerHealth : NetworkBehaviour
 
         if (hitObject.TryGetComponent<FallingObstacle>(out var obstacle))
         {
-            // Spieler stirbt nur, wenn das Objekt noch fällt (!IsLanded)
             if (!obstacle.IsLanded)
             {
                 Sterben();
@@ -141,16 +204,14 @@ public class PlayerHealth : NetworkBehaviour
 
     private void Sterben()
     {
-        // Abbruchbedingung: Wenn bereits immun, wird der Tod verhindert
         if (istImmun.Value) return;
 
         if (aktuelleLeben.Value > 0)
         {
-            aktuelleLeben.Value--; // Server zieht ein Leben ab
+            aktuelleLeben.Value--;
 
             if (aktuelleLeben.Value > 0)
             {
-                // Immunität serverseitig aktivieren
                 istImmun.Value = true;
                 immunTimer = immunitaetsDauer;
 
