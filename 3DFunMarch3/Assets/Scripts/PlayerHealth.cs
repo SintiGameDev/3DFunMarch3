@@ -5,119 +5,159 @@ using TMPro;
 public class PlayerHealth : NetworkBehaviour
 {
     [Header("Leben & Respawn")]
-    [SerializeField] private float todesHoehe = -10f; // Ab dieser Y-Koordinate stirbt der Spieler
+    [SerializeField] private float todesHoehe = -10f;
     [SerializeField] private int startLeben = 3;
+    [SerializeField] private float immunitaetsDauer = 3f; // 3 Sekunden Immunität
 
     [Header("UI")]
     [SerializeField] private TextMeshProUGUI lebenTextUI;
 
-    // Synchronisierte Variable. Server schreibt, alle lesen.
+    // Synchronisierte Variablen. Server schreibt, alle lesen.
     private NetworkVariable<int> aktuelleLeben = new NetworkVariable<int>(
         3,
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server
     );
 
+    // Synchronisierter Status für die Immunität
+    private NetworkVariable<bool> istImmun = new NetworkVariable<bool>(
+        false,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
+
     private CharacterController characterController;
+    private float immunTimer = 0f;
 
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
     }
 
-    //public override void OnNetworkSpawn()
-    //{
-    //    // UI initialisieren
-    //    UpdateLebenUI(0, aktuelleLeben.Value);
-
-    //    // Listener für zukünftige Änderungen registrieren
-    //    aktuelleLeben.OnValueChanged += UpdateLebenUI;
-
-    //    if (IsServer)
-    //    {
-    //        aktuelleLeben.Value = startLeben;
-    //    }
-    //}
-
-    //public override void OnNetworkDespawn()
-    //{
-    //    // Listener sauber entfernen, um Memory Leaks zu vermeiden
-    //    aktuelleLeben.OnValueChanged -= UpdateLebenUI;
-    //}
-
     public override void OnNetworkSpawn()
     {
-        // 1. Serverseitige Initialisierung (muss für alle Spieler passieren)
         if (IsServer)
         {
             aktuelleLeben.Value = startLeben;
+            istImmun.Value = false;
         }
 
-        // 2. Clientseitige UI-Logik (Nur für den lokalen Spieler)
         if (IsOwner)
         {
-            // UI initialisieren
             UpdateLebenUI(0, aktuelleLeben.Value);
-
-            // Listener für zukünftige Änderungen registrieren
             aktuelleLeben.OnValueChanged += UpdateLebenUI;
         }
         else
         {
-            // 3. UI für alle fremden Spieler deaktivieren!
             if (lebenTextUI != null)
             {
-                // Best Practice: Das gesamte Canvas des Fremdspielers deaktivieren, 
-                // nicht nur den Text. Das spart Performance (Draw Calls).
                 lebenTextUI.canvas.gameObject.SetActive(false);
             }
         }
+
+        // Listener für visuelles Feedback bei Immunitäts-Statuswechsel
+        istImmun.OnValueChanged += OnImmunitaetGeaendert;
     }
 
     public override void OnNetworkDespawn()
     {
-        // Listener nur entfernen, wenn er auch registriert wurde (IsOwner)
         if (IsOwner)
         {
             aktuelleLeben.OnValueChanged -= UpdateLebenUI;
         }
+        istImmun.OnValueChanged -= OnImmunitaetGeaendert;
     }
 
     private void UpdateLebenUI(int alterWert, int neuerWert)
     {
-        // UI nur für den Besitzer (Owner) des Spielers aktualisieren
         if (IsOwner && lebenTextUI != null)
         {
             lebenTextUI.text = "Leben: " + neuerWert;
         }
     }
 
+    private void OnImmunitaetGeaendert(bool vorher, bool jetzt)
+    {
+        // Hier greift die visuelle Repräsentation (Client-Side Prediction / Feedback).
+        // z.B. MeshRenderer auf transparent setzen, Skript für Blinken aktivieren etc.
+        if (jetzt)
+        {
+            Debug.Log($"[PlayerHealth] Spieler {OwnerClientId} ist nun immun.");
+            // Beispiel: GetComponentInChildren<Renderer>().material.color = Color.gray;
+        }
+        else
+        {
+            Debug.Log($"[PlayerHealth] Spieler {OwnerClientId} ist wieder verwundbar.");
+            // Beispiel: GetComponentInChildren<Renderer>().material.color = Color.white;
+        }
+    }
+
     private void Update()
     {
-        // Nur der Server prüft die Todesbedingung, um Cheating zu verhindern
         if (!IsServer) return;
 
-        // Fällt der Spieler unter die definierte Höhe?
+        // Immunitäts-Timer verwalten (Nur der Server steuert die Zeit)
+        if (istImmun.Value)
+        {
+            immunTimer -= Time.deltaTime;
+            if (immunTimer <= 0f)
+            {
+                istImmun.Value = false; // Immunität aufheben
+            }
+        }
+
+        // Fall in den Abgrund prüfen
         if (transform.position.y < todesHoehe)
         {
             Sterben();
         }
     }
 
+    // Variante 1: Wenn das fallende Rigidbody den Spieler trifft
+    private void OnCollisionEnter(Collision collision)
+    {
+        KollisionMitHindernisPruefen(collision.gameObject);
+    }
+
+    // Variante 2: Wenn der Spieler in das fallende Objekt läuft (CharacterController Logik)
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        KollisionMitHindernisPruefen(hit.gameObject);
+    }
+
+    private void KollisionMitHindernisPruefen(GameObject hitObject)
+    {
+        if (!IsServer) return;
+
+        if (hitObject.TryGetComponent<FallingObstacle>(out var obstacle))
+        {
+            // Spieler stirbt nur, wenn das Objekt noch fällt (!IsLanded)
+            if (!obstacle.IsLanded)
+            {
+                Sterben();
+            }
+        }
+    }
+
     private void Sterben()
     {
+        // Abbruchbedingung: Wenn bereits immun, wird der Tod verhindert
+        if (istImmun.Value) return;
+
         if (aktuelleLeben.Value > 0)
         {
             aktuelleLeben.Value--; // Server zieht ein Leben ab
 
             if (aktuelleLeben.Value > 0)
             {
-                // RPC an den Client senden, damit dieser sich teleportiert
+                // Immunität serverseitig aktivieren
+                istImmun.Value = true;
+                immunTimer = immunitaetsDauer;
+
                 RespawnClientRpc();
             }
             else
             {
-                // Keine Leben mehr
                 GameOverClientRpc();
             }
         }
@@ -128,12 +168,9 @@ public class PlayerHealth : NetworkBehaviour
     {
         if (!IsOwner) return;
 
-        // WICHTIG: Der CharacterController muss für einen manuellen Teleport kurz deaktiviert werden, 
-        // da er sonst die transform.position überschreibt.
         if (characterController != null)
             characterController.enabled = false;
 
-        // Fallback-Spawnpunkt (z.B. in der Mitte der Arena leicht erhöht)
         transform.position = new Vector3(0, 5, 0);
 
         if (characterController != null)
@@ -145,7 +182,6 @@ public class PlayerHealth : NetworkBehaviour
     {
         if (!IsOwner) return;
 
-        // Hier kann später eine Game-Over-UI aktiviert oder der Client disconnected werden
         Debug.Log("[PlayerHealth] Game Over! Keine Leben mehr.");
         if (lebenTextUI != null) lebenTextUI.text = "GAME OVER";
     }
