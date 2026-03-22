@@ -22,6 +22,14 @@ public class PlayerMovement : NetworkBehaviour
     [Header("Visuals")]
     [SerializeField] private Transform visualModel;
 
+    [Header("Netzwerk Visuals")]
+    private NetworkVariable<float> netzwerkModellRotationY = new NetworkVariable<float>(
+        0f,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server
+    );
+    private float letzteGesendeteRotationY = 0f;
+
     private CharacterController characterController;
     private Camera spielerKamera;
     private Renderer[] spielerRenderers; // F�r visuellen Effekt
@@ -69,6 +77,13 @@ public class PlayerMovement : NetworkBehaviour
 
     void Update()
     {
+        // Nicht-Besitzer (andere Spieler) interpolieren die Rotation vom Server
+        if (!IsOwner && visualModel != null)
+        {
+            Quaternion zielRot = Quaternion.Euler(visualModel.eulerAngles.x, netzwerkModellRotationY.Value, visualModel.eulerAngles.z);
+            visualModel.rotation = Quaternion.Slerp(visualModel.rotation, zielRot, Time.deltaTime * 10f);
+        }
+
         if (!IsOwner) return;
         if (characterController == null) return;
 
@@ -126,6 +141,13 @@ public class PlayerMovement : NetworkBehaviour
                 Quaternion zielRotation = Quaternion.LookRotation(blickRichtung.normalized);
                 // "Less strong": Langsamer eindrehen (5f statt 15f)
                 visualModel.rotation = Quaternion.Slerp(visualModel.rotation, zielRotation, Time.deltaTime * 5f);
+                
+                // Rotations-Aenderung ans Netzwerk senden
+                if (Mathf.Abs(Mathf.DeltaAngle(visualModel.eulerAngles.y, letzteGesendeteRotationY)) > 2f)
+                {
+                    UpdateModellRotationServerRpc(visualModel.eulerAngles.y);
+                    letzteGesendeteRotationY = visualModel.eulerAngles.y;
+                }
             }
         }
 
@@ -154,6 +176,12 @@ public class PlayerMovement : NetworkBehaviour
         Vector3 finaleBewegung = bewegung + aktuelleSchubGeschwindigkeit;
 
         characterController.Move(finaleBewegung * Time.deltaTime);
+    }
+
+    [ServerRpc]
+    private void UpdateModellRotationServerRpc(float rotY)
+    {
+        netzwerkModellRotationY.Value = rotY;
     }
 
     // --- SCHUBSEN LOGIK (ClientRpc) ---
