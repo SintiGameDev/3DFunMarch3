@@ -96,6 +96,8 @@ public class GameManager : NetworkBehaviour
         RundeNeustarten();
     }
 
+    public void RundeNeustartenOeffentlich() => RundeNeustarten();
+
     private void RundeNeustarten()
     {
         // Spieler an Spawn-Punkte versetzen
