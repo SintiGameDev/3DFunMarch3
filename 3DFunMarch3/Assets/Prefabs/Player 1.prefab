@@ -484,7 +484,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   schubReichweite: 3.5
-  schubKraft: 15
+  schubKraft: 30
   angriffCooldown: 0.5
   spielerLayer:
     serializedVersion: 2
