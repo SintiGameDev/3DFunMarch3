@@ -43,9 +43,9 @@ public class PlayerMovement : NetworkBehaviour
 
         if (visualModel == null)
         {
-            foreach (Transform child in transform)
+            foreach (Transform child in GetComponentsInChildren<Transform>())
             {
-                if (child.GetComponent<Camera>() == null && child.GetComponent<CameraLook>() == null)
+                if (child.name == "HumanCharacterDummy_M")
                 {
                     visualModel = child;
                     break;
