@@ -384,6 +384,7 @@ MonoBehaviour:
   schubFarbe: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   flashDauer: 0.2
   schubDamping: 5
+  visualModel: {fileID: 0}
 --- !u!54 &8053920643686877431
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -484,7 +485,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   schubReichweite: 3.5
-  schubKraft: 30
+  schubKraft: 60
   angriffCooldown: 0.5
   spielerLayer:
     serializedVersion: 2
