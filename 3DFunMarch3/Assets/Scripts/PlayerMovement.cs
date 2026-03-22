@@ -9,6 +9,10 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField] private float sprungKraft = 5f;
     [SerializeField] private float schwerkraft = -20f;
 
+    [Header("Doppelsprung")]
+    [SerializeField] private bool erlaubeDoppelSprung = true;
+    [SerializeField] private float doppelSprungKraft = 5f; // Erlaubt separate Justierung der Kraft des zweiten Sprungs
+
     [Header("Boden-Erkennung")]
     [SerializeField] private Transform bodenPunkt;
     [SerializeField] private float bodenRadius = 0.25f;
@@ -17,6 +21,9 @@ public class PlayerMovement : NetworkBehaviour
     private CharacterController characterController;
     private Camera spielerKamera;
     private float vertikaleGeschwindigkeit = 0f;
+
+    // Status-Flag für den Doppelsprung
+    private bool kannDoppelSprung = false;
 
     public override void OnNetworkSpawn()
     {
@@ -48,15 +55,21 @@ public class PlayerMovement : NetworkBehaviour
 
     private void BewegungenVerarbeiten()
     {
-        // Boden-Erkennung
+        // Boden-Erkennung durch den CharacterController
         bool istAmBoden = characterController.isGrounded;
-        if (istAmBoden && vertikaleGeschwindigkeit < 0f)
-            vertikaleGeschwindigkeit = -2f;
 
-        // Eingabe
+        // Wenn der Spieler auf dem Boden steht, Zustand zurücksetzen
+        if (istAmBoden && vertikaleGeschwindigkeit < 0)
+        {
+            // Verhindert endloses Ansammeln negativer Fallgeschwindigkeit
+            vertikaleGeschwindigkeit = -2f;
+            kannDoppelSprung = true; // Doppelsprung wieder aufladen
+        }
+
+        // Eingaben lesen
         float horizontal = Input.GetAxisRaw("Horizontal");
-        float vertikal   = Input.GetAxisRaw("Vertical");
-        bool sprint      = Input.GetKey(KeyCode.LeftShift);
+        float vertikal = Input.GetAxisRaw("Vertical");
+        bool sprint = Input.GetKey(KeyCode.LeftShift);
         float aktuelleGeschwindigkeit = sprint ? sprintGeschwindigkeit : bewegungsGeschwindigkeit;
 
         // Bewegungsrichtung relativ zur Kamera berechnen
@@ -64,12 +77,11 @@ public class PlayerMovement : NetworkBehaviour
 
         if (spielerKamera != null)
         {
-            // Kamera-Vorwaerts auf die horizontale Ebene projizieren
             Vector3 vorwaerts = spielerKamera.transform.forward;
-            Vector3 rechts    = spielerKamera.transform.right;
+            Vector3 rechts = spielerKamera.transform.right;
 
             vorwaerts.y = 0f;
-            rechts.y    = 0f;
+            rechts.y = 0f;
 
             vorwaerts.Normalize();
             rechts.Normalize();
@@ -86,9 +98,21 @@ public class PlayerMovement : NetworkBehaviour
         if (richtung.magnitude > 1f)
             richtung.Normalize();
 
-        // Sprung
-        if (Input.GetKeyDown(KeyCode.Space) && istAmBoden)
-            vertikaleGeschwindigkeit = Mathf.Sqrt(sprungKraft * -2f * schwerkraft);
+        // --- SPRUNG-LOGIK ---
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (istAmBoden)
+            {
+                // Regulärer Absprung vom Boden
+                vertikaleGeschwindigkeit = Mathf.Sqrt(sprungKraft * -2f * schwerkraft);
+            }
+            else if (erlaubeDoppelSprung && kannDoppelSprung)
+            {
+                // Doppelsprung in der Luft ausführen
+                vertikaleGeschwindigkeit = Mathf.Sqrt(doppelSprungKraft * -2f * schwerkraft);
+                kannDoppelSprung = false; // Flag verbrauchen, damit kein Triple-Jump möglich ist
+            }
+        }
 
         // Schwerkraft akkumulieren
         vertikaleGeschwindigkeit += schwerkraft * Time.deltaTime;
@@ -97,6 +121,7 @@ public class PlayerMovement : NetworkBehaviour
         Vector3 bewegung = richtung * aktuelleGeschwindigkeit;
         bewegung.y = vertikaleGeschwindigkeit;
 
+        // Bewegung auf den Controller anwenden
         characterController.Move(bewegung * Time.deltaTime);
     }
 }
