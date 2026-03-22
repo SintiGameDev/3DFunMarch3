@@ -1,6 +1,6 @@
 using UnityEngine;
 using Unity.Netcode;
-using System.Collections; // Wichtig für Coroutine
+using System.Collections; // Wichtig fï¿½r Coroutine
 
 public class PlayerMovement : NetworkBehaviour
 {
@@ -17,26 +17,41 @@ public class PlayerMovement : NetworkBehaviour
     [Header("Schubsen Feedback (Rein per Skript)")]
     [SerializeField] private Color schubFarbe = Color.yellow;
     [SerializeField] private float flashDauer = 0.2f;
-    [SerializeField] private float schubDamping = 5f; // Wie schnell die Stoßkraft nachlässt
+    [SerializeField] private float schubDamping = 5f; // Wie schnell die Stoï¿½kraft nachlï¿½sst
+
+    [Header("Visuals")]
+    [SerializeField] private Transform visualModel;
 
     private CharacterController characterController;
     private Camera spielerKamera;
-    private Renderer[] spielerRenderers; // Für visuellen Effekt
+    private Renderer[] spielerRenderers; // Fï¿½r visuellen Effekt
     private Color[] originalFarben; // Zum Wiederherstellen
 
     private float vertikaleGeschwindigkeit = 0f;
     private bool kannDoppelSprung = false;
 
-    // Aktuelle Stoß-Geschwindigkeit, die auf den Spieler wirkt
+    // Aktuelle Stoï¿½-Geschwindigkeit, die auf den Spieler wirkt
     private Vector3 aktuelleSchubGeschwindigkeit = Vector3.zero;
 
     public override void OnNetworkSpawn()
     {
         characterController = GetComponent<CharacterController>();
 
-        // Renderer für visuellen Effekt suchen
+        // Renderer fï¿½r visuellen Effekt suchen
         spielerRenderers = GetComponentsInChildren<Renderer>();
         OriginalFarbenSpeichern();
+
+        if (visualModel == null)
+        {
+            foreach (Transform child in GetComponentsInChildren<Transform>())
+            {
+                if (child.name == "HumanCharacterDummy_M")
+                {
+                    visualModel = child;
+                    break;
+                }
+            }
+        }
 
         if (!IsOwner)
         {
@@ -57,7 +72,7 @@ public class PlayerMovement : NetworkBehaviour
         if (!IsOwner) return;
         if (characterController == null) return;
 
-        // Stoßgeschwindigkeit über Zeit abbauen (Damping)
+        // Stoï¿½geschwindigkeit ï¿½ber Zeit abbauen (Damping)
         if (aktuelleSchubGeschwindigkeit.magnitude > 0.1f)
         {
             aktuelleSchubGeschwindigkeit = Vector3.Lerp(aktuelleSchubGeschwindigkeit, Vector3.zero, Time.deltaTime * schubDamping);
@@ -101,6 +116,19 @@ public class PlayerMovement : NetworkBehaviour
 
         if (richtung.magnitude > 1f) richtung.Normalize();
 
+        // Drehe das visuelle Modell in die Blickrichtung der Kamera (wo der Spieler hinschaut)
+        if (visualModel != null && spielerKamera != null)
+        {
+            Vector3 blickRichtung = spielerKamera.transform.forward;
+            blickRichtung.y = 0f;
+            if (blickRichtung.sqrMagnitude > 0.001f)
+            {
+                Quaternion zielRotation = Quaternion.LookRotation(blickRichtung.normalized);
+                // "Less strong": Langsamer eindrehen (5f statt 15f)
+                visualModel.rotation = Quaternion.Slerp(visualModel.rotation, zielRotation, Time.deltaTime * 5f);
+            }
+        }
+
         // Sprung
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -122,7 +150,7 @@ public class PlayerMovement : NetworkBehaviour
         Vector3 bewegung = (richtung * aktuelleGeschwindigkeit);
         bewegung.y = vertikaleGeschwindigkeit;
 
-        // WICHTIG: Die Stoßgeschwindigkeit wird hier hinzuaddiert!
+        // WICHTIG: Die Stoï¿½geschwindigkeit wird hier hinzuaddiert!
         Vector3 finaleBewegung = bewegung + aktuelleSchubGeschwindigkeit;
 
         characterController.Move(finaleBewegung * Time.deltaTime);
@@ -133,7 +161,7 @@ public class PlayerMovement : NetworkBehaviour
     [ClientRpc]
     public void EmpfangeSchubClientRpc(Vector3 schubKraftVector)
     {
-        // Diese Methode läuft auf dem Client des Opfers
+        // Diese Methode lï¿½uft auf dem Client des Opfers
         Debug.Log($"[Client {OwnerClientId}] Ich wurde geschubst! Kraft: {schubKraftVector}");
 
         // Die Kraft direkt setzen (wird in Update() verarbeitet)
