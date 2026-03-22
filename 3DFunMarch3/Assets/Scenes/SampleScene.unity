@@ -795,15 +795,15 @@ MonoBehaviour:
   - {fileID: 7384884230914764799, guid: 2a4a7f4204975ac49a2f0310e57265da, type: 3}
   - {fileID: 2699120337045188249, guid: b16f47f3973251f44ad5e4f0cc5c2578, type: 3}
   plattformZentrum: {fileID: 996135773}
-  spawnBereichX: 10
-  spawnBereichZ: 10
+  spawnBereichX: 20
+  spawnBereichZ: 20
   minSpawnHoehe: 30
   maxSpawnHoehe: 100
   plattformHoehe: 0
   spawnIntervall: 0.5
-  maxObstacles: 1000
-  minSkalierung: 0.5
-  maxSkalierung: 4.5
+  maxObstacles: 10000
+  minSkalierung: 1
+  maxSkalierung: 2.5
 --- !u!4 &528757834
 Transform:
   m_ObjectHideFlags: 0
@@ -1432,7 +1432,7 @@ GameObject:
   - component: {fileID: 996135770}
   m_Layer: 0
   m_Name: Cube
-  m_TagString: Untagged
+  m_TagString: Platform
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

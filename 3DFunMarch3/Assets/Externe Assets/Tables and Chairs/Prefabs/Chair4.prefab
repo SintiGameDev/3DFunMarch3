@@ -180,6 +180,8 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   masse: 10
   luftwiderstand: 0.5
+  minRotationsGeschwindigkeit: 5
+  maxRotationsGeschwindigkeit: 40
   aufprallSchwelle: 2
 --- !u!114 &6396427252887117346
 MonoBehaviour:

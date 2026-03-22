@@ -9,13 +9,12 @@ public class FallingObstacle : NetworkBehaviour
     [SerializeField] private float luftwiderstand   = 0.2f;
 
     [Header("Rotation")]
-    [SerializeField] private float minRotationsGeschwindigkeit = 30f;
-    [SerializeField] private float maxRotationsGeschwindigkeit = 120f;
+    [SerializeField] private float minRotationsGeschwindigkeit = 5f;
+    [SerializeField] private float maxRotationsGeschwindigkeit = 20f;
 
     [Header("Aufprall")]
     [SerializeField] private float aufprallSchwelle = 1f;
 
-    // Netzwerk-synchronisierter Landed-Status
     private NetworkVariable<bool> istGelandet = new NetworkVariable<bool>(
         false,
         NetworkVariableReadPermission.Everyone,
@@ -23,6 +22,8 @@ public class FallingObstacle : NetworkBehaviour
     );
 
     private Rigidbody rb;
+    private Vector3 eingefrorenePosition;
+    private Quaternion eingefroreneRotation;
 
     public bool IsLanded => istGelandet.Value;
 
@@ -32,11 +33,10 @@ public class FallingObstacle : NetworkBehaviour
 
         if (IsServer)
         {
-            rb.isKinematic  = false;
-            rb.mass         = masse;
-            rb.linearDamping       = luftwiderstand;
+            rb.isKinematic = false;
+            rb.mass        = masse;
+            rb.linearDamping      = luftwiderstand;
 
-            // Zufaellige Rotationsgeschwindigkeit beim Spawnen setzen
             Vector3 zufaelligeTorque = new Vector3(
                 Random.Range(-1f, 1f),
                 Random.Range(-1f, 1f),
@@ -47,11 +47,9 @@ public class FallingObstacle : NetworkBehaviour
         }
         else
         {
-            // Clients simulieren keine Physik
             rb.isKinematic = true;
         }
 
-        // Auf Landungs-Aenderung reagieren
         istGelandet.OnValueChanged += OnIsGelandetChanged;
     }
 
@@ -65,8 +63,7 @@ public class FallingObstacle : NetworkBehaviour
         if (!IsServer) return;
         if (istGelandet.Value) return;
 
-        // Pruefen ob Kollisionspartner die Plattform oder ein bereits gelandetes FO ist
-        bool trifftPlattform = collision.gameObject.CompareTag("Platform");
+        bool trifftPlattform    = collision.gameObject.CompareTag("Platform");
         bool trifftGelandetesFO = false;
 
         var anderesFO = collision.gameObject.GetComponent<FallingObstacle>();
@@ -76,7 +73,10 @@ public class FallingObstacle : NetworkBehaviour
         if ((trifftPlattform || trifftGelandetesFO)
             && collision.relativeVelocity.magnitude >= aufprallSchwelle)
         {
-            istGelandet.Value = true;
+            // Position und Rotation zum Einfrierzeitpunkt merken
+            eingefrorenePosition = transform.position;
+            eingefroreneRotation = transform.rotation;
+            istGelandet.Value    = true;
         }
     }
 
@@ -84,14 +84,33 @@ public class FallingObstacle : NetworkBehaviour
     {
         if (!jetzt) return;
 
-        // Auf allen Clients und Host: Objekt einfrieren
         if (rb != null)
         {
-            rb.linearVelocity   = Vector3.zero;
-            rb.angularVelocity  = Vector3.zero;
-            rb.isKinematic      = true;
+            rb.linearVelocity  = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic     = true;
+            rb.constraints     = RigidbodyConstraints.FreezeAll;
         }
 
-        Debug.Log("[FallingObstacle] " + gameObject.name + " gelandet.");
+        // Position und Rotation hart fixieren
+        if (eingefrorenePosition != Vector3.zero)
+        {
+            transform.position = eingefrorenePosition;
+            transform.rotation = eingefroreneRotation;
+        }
+
+        Debug.Log("[FallingObstacle] " + gameObject.name + " gelandet und eingefroren.");
+    }
+
+    // LateUpdate sicherstellt dass Objekt nicht wegrutscht
+    void LateUpdate()
+    {
+        if (!istGelandet.Value) return;
+
+        if (eingefrorenePosition != Vector3.zero)
+        {
+            transform.position = eingefrorenePosition;
+            transform.rotation = eingefroreneRotation;
+        }
     }
 }

@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 3684829179378028458}
   - component: {fileID: 2657881602506412832}
   - component: {fileID: 8682244512586665481}
-  - component: {fileID: -8758201168416061398}
   - component: {fileID: -8030561601392234385}
+  - component: {fileID: -8758201168416061398}
   - component: {fileID: 2597299988820544376}
   m_Layer: 0
   m_Name: Chair2
@@ -140,22 +140,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &-8758201168416061398
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2892393900813446783}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ecb953ef20ea9534c8ca385c795d9761, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  masse: 10
-  luftwiderstand: 0.5
-  aufprallSchwelle: 2
 --- !u!114 &-8030561601392234385
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -181,6 +165,24 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
+--- !u!114 &-8758201168416061398
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2892393900813446783}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecb953ef20ea9534c8ca385c795d9761, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  masse: 10
+  luftwiderstand: 0.5
+  minRotationsGeschwindigkeit: 5
+  maxRotationsGeschwindigkeit: 40
+  aufprallSchwelle: 2
 --- !u!114 &2597299988820544376
 MonoBehaviour:
   m_ObjectHideFlags: 0
