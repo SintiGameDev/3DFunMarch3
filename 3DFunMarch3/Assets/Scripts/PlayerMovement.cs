@@ -64,7 +64,7 @@ public class PlayerMovement : NetworkBehaviour
         if (!IsOwner)
         {
             characterController.enabled = false;
-            enabled = false;
+            // 'enabled = false;' was removed here so the script can still run Update() for non-owners to sync the visualModel!
             return;
         }
 
