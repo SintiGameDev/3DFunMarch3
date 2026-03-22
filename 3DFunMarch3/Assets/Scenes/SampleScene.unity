@@ -801,9 +801,9 @@ MonoBehaviour:
   maxSpawnHoehe: 100
   plattformHoehe: 0
   spawnIntervall: 0.5
-  maxObstacles: 30
+  maxObstacles: 1000
   minSkalierung: 0.5
-  maxSkalierung: 2.5
+  maxSkalierung: 4.5
 --- !u!4 &528757834
 Transform:
   m_ObjectHideFlags: 0
@@ -2105,12 +2105,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1446896487}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.49268398, y: 0.7490464, z: 0.383}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0.809333}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 2140519733}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1564538115
 GameObject:
@@ -2257,12 +2257,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1591268067}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.49268398, y: 0.7490464, z: -1.34}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -0.91366696}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 2140519733}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1591681405
 GameObject:
@@ -3020,7 +3020,9 @@ Transform:
   m_LocalPosition: {x: -0.49268398, y: 0.7490464, z: -0.42633304}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1591268068}
+  - {fileID: 1446896488}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2140519734
@@ -3062,6 +3064,4 @@ SceneRoots:
   - {fileID: 596218579}
   - {fileID: 193601515}
   - {fileID: 2140519733}
-  - {fileID: 1591268068}
-  - {fileID: 1446896488}
   - {fileID: 528757834}
